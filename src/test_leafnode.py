@@ -17,5 +17,11 @@ class TestLeafNode(unittest.TestCase):
         with self.assertRaises(ValueError):
             LeafNode(tag="a", value=None, **props).to_html()
 
+    def test_no_tag(self):
+        props = {
+                "href": "https://www.google.com"
+            }
+        node = LeafNode(tag=None, value="juju", **props)
+
 if __name__ == "__main__":
     unittest.main()
