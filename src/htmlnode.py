@@ -12,7 +12,7 @@ class HTMLNode:
         s = " "
         for key, value in self.props.items():
             s += key.replace("\"", "") + "=" + "\"" + value + "\"" + " "
-        return s
+        return s if self.props else ""
     
     def __repr__(self):
         return f'HTMLNode(\'{self.tag}\', \'{self.value}\', \'{self.children}\', \'{self.props}\')'
