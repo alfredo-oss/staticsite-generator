@@ -1,5 +1,4 @@
-from typing import Optional
-from htmlnode import HTMLNode
+from .htmlnode import HTMLNode
 
 class LeafNode(HTMLNode):
     def __init__(self, tag, value, **kwargs):

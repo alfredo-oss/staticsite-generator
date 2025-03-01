@@ -1,5 +1,5 @@
 from typing import Optional
-from htmlnode import HTMLNode
+from .htmlnode import HTMLNode
 
 class ParentNode(HTMLNode):
     def __init__(self, tag: str, children: list[HTMLNode], **kwargs: Optional[dict]):

@@ -1,1 +1,2 @@
-python3 -m unittest discover -s src
+cd src
+PYTHONPATH=$(pwd) python -m unittest discover service/tests
