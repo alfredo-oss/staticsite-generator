@@ -2,8 +2,9 @@ from typing import Optional
 from htmlnode import HTMLNode
 
 class LeafNode(HTMLNode):
-    def __init__(self):
-        super().__init__(children=None)
+    def __init__(self, tag, value, **kwargs):
+        super().__init__(tag, value, **kwargs)
+
 
     def to_html(self):
         if not self.value:
@@ -11,4 +12,4 @@ class LeafNode(HTMLNode):
         elif not self.tag:
             return self.value
         else:
-            return f'<{self.tag}{self.props_to_html()}></{self.tag}>'
+            return f'<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>'
