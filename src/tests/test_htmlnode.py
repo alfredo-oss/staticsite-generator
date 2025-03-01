@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode
+from service.nodes.htmlnode import HTMLNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_prop_to_str(self):

@@ -1,4 +1,4 @@
-from leafnode import LeafNode
+from service.nodes.leafnode import LeafNode
 import unittest
 
 class TestLeafNode(unittest.TestCase):
