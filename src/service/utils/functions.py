@@ -49,12 +49,10 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
         s = ""
         count = 0
         for c in node.text:
-            print(c)
             s += c
             if delimiter == c:
                 count += 1
                 s.replace(delimiter, "")
-        print(count)
         if count == 2:
             return True
         else:
@@ -70,5 +68,4 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             aux.append(TextNode(dif_text, text_type))
             aux.append(TextNode(text_second, TextType.NORMAL)) 
         res.extend(aux)
-    print(res)
     return res
