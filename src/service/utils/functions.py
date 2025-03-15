@@ -1,5 +1,6 @@
 from service.nodes.textnode import TextNode, TextType
 from service.nodes.leafnode import LeafNode
+import re
 
 def text_node_to_html_node(text_node: TextNode):
     match text_node.text_type:
@@ -69,3 +70,12 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             aux.append(TextNode(text_second, TextType.NORMAL)) 
         res.extend(aux)
     return res
+
+def extract_markdown_images(text):
+    matches = re.findall(r"(\[(.*?)\]) (((.*?)))", text)
+    return matches
+
+def extract_markdown_links(text):
+    matches = re.findall(r"((.*?))", text)
+    return matches
+
