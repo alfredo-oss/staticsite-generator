@@ -167,9 +167,9 @@ def split_nodes_link(old_nodes):
     result = []
     if len(old_nodes) > 1:
         for node in old_nodes:
-            result.append(main_job(node))
+            result.append(main_job(node.text))
         return result
     elif len(old_nodes) == 1:
-        return main_job(old_nodes[0])
+        return main_job(old_nodes[0].text)
     else:
         return result
