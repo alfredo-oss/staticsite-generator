@@ -12,10 +12,10 @@ class TestImageRegexExtraction(unittest.TestCase):
         self.assertListEqual(
             [
                 TextNode("This is text with an ", TextType.NORMAL),
-                TextNode("link", TextType.IMAGE, "https://alfred.com/vlog"),
+                TextNode("link", TextType.LINK, "https://alfred.com/vlog"),
                 TextNode(" and another ", TextType.NORMAL),
                 TextNode(
-                    "second link", TextType.IMAGE, "https://alfred.com/contact"
+                    "second link", TextType.LINK, "https://alfred.com/contact"
                 ),
             ],
             new_nodes,

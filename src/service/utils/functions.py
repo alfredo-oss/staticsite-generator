@@ -173,3 +173,8 @@ def split_nodes_link(old_nodes):
         return main_job(old_nodes[0].text)
     else:
         return result
+    
+    def text_to_textnodes(text):
+        c
+        for delimiter in delimiters:
+            pass
