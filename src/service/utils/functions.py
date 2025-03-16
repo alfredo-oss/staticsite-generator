@@ -247,7 +247,7 @@ def block_to_block(block) -> BlockType:
         return BlockType.quote
     elif block[0] == "-":
         return BlockType.unordered_list
-    elif block[:2] == ol_exp:
+    elif block[0].isdigit() and block[1] == ".":
         return BlockType.ordered_list
     else:
         return BlockType.paragraph
