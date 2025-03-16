@@ -17,8 +17,12 @@ res = [text]
 for delimiter, delimiter_type in delimiters:
     tmp = []
     for text_element in res:
-        print(split_nodes_delimiter([TextNode(text_element, TextType.NORMAL)], delimiter=delimiter, text_type=delimiter_type))
+        #print(text_element)
+        #print(delimiter, delimiter_type)
+        tmp_txt_node = TextNode(text_element, TextType.NORMAL)
+        tmp = split_nodes_delimiter([tmp_txt_node], delimiter, delimiter_type)
         print(tmp)
-    res = tmp
+        #print(split_nodes_delimiter([TextNode(text_element, TextType.NORMAL)]))
+     
 
-print(res)
+#print(res)

@@ -50,15 +50,26 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     def has_matching_delimiter(node: TextNode, delimiter: str) -> bool:
         s = ""
         count = 0
-        for c in node.text:
-            s += c
-            if delimiter == c:
-                count += 1
-                s.replace(delimiter, "")
-        if count == 2:
-            return True
-        else:
-            return False
+        if len(delimiter) == 1:
+            for c in node.text:
+                s += c
+                if delimiter == c:
+                    count += 1
+                    s.replace(delimiter, "")
+            if count == 2:
+                return True
+            else:
+                return False
+        if len(delimiter) == 2:
+            j = 0
+            for i in range(1, len(node.text)):
+                if delimiter == (node.text[i] + node.text[j]):
+                    count += 1
+                j += 1
+            if count == 2:
+                return True
+            else:
+                return False            
         
     # how do i know which part of the splitted array will be the one that has to be assigned with the special delimiter type?
     res = []

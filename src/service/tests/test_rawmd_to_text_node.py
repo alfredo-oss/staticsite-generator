@@ -31,11 +31,11 @@ class TestMDtoTextNode(unittest.TestCase):
         res = split_nodes_delimiter(raw_md, delimiter, text_type)
         self.assertEqual(res, expected)
 
-    ######### tests ** bold ** code bold transformation #########
-    def test_raw_code_to_text_single(self):
+    ######### tests ** bold ** block transformation #########
+    def test_raw_bold_to_text_single(self):
         raw_md = [TextNode("This is text with a **bold block** word", TextType.NORMAL)]
         delimiter = "**"
-        text_type = TextType.CODE
+        text_type = TextType.BOLD
         expected = [
             TextNode("This is text with a ", TextType.NORMAL),
             TextNode("bold block", TextType.BOLD),
@@ -44,10 +44,10 @@ class TestMDtoTextNode(unittest.TestCase):
         res = split_nodes_delimiter(raw_md, delimiter, text_type)
         self.assertEqual(res, expected)
     
-    def test_raw_code_to_text_multiple(self):
+    def test_raw_bold_to_text_multiple(self):
         raw_md = [TextNode("This is text with a **bold block** word", TextType.NORMAL), TextNode("This is text with a **bold block** word", TextType.NORMAL)]
         delimiter = "**"
-        text_type = TextType.CODE
+        text_type = TextType.BOLD
         expected = [
             TextNode("This is text with a ", TextType.NORMAL),
             TextNode("bold block", TextType.BOLD),
@@ -60,7 +60,7 @@ class TestMDtoTextNode(unittest.TestCase):
         self.assertEqual(res, expected)
 
     ######### tests _ italic _ code italic transformation #########
-    def test_raw_code_to_text_single(self):
+    def test_raw_italic_to_text_single(self):
         raw_md = [TextNode("This is text with an _italic block_ word", TextType.NORMAL)]
         delimiter = "_"
         text_type = TextType.ITALIC
@@ -72,7 +72,7 @@ class TestMDtoTextNode(unittest.TestCase):
         res = split_nodes_delimiter(raw_md, delimiter, text_type)
         self.assertEqual(res, expected)
 
-    def test_raw_code_to_text_multiple(self):
+    def test_raw_italic_to_text_multiple(self):
         raw_md = [TextNode("This is text with an _italic block_ word", TextType.NORMAL), TextNode("This is text with an _italic block_ word", TextType.NORMAL)]
         delimiter = "_"
         text_type = TextType.ITALIC
