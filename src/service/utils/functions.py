@@ -71,7 +71,7 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             else:
                 return False            
         
-    # how do i know which part of the splitted array will be the one that has to be assigned with the special delimiter type?
+    
     res = []
     for old_node in old_nodes:
         aux = []
@@ -80,8 +80,18 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             aux.append(TextNode(text_first, TextType.NORMAL))
             aux.append(TextNode(dif_text, text_type))
             aux.append(TextNode(text_second, TextType.NORMAL)) 
+        else:
+            aux.append(old_node)
         res.extend(aux)
-    return res
+    return res 
+
+def has_image(node):
+    matches = re.findall(r"!\[(.*?)\]\((.*?)\)", node.text)
+    return True if matches else False
+
+def has_link(node):
+    matches = re.findall(r"\[(.*?)\]\((.*?)\)", node.text)
+    return True if matches else False
 
 def extract_markdown_images(text):
     matches = re.findall(r"!\[(.*?)\]\((.*?)\)", text)
@@ -131,10 +141,10 @@ def split_nodes_image(old_nodes):
     result = []
     if len(old_nodes) > 1:
         for node in old_nodes:
-            result.append(main_job(node.text))
+            result.append(main_job(node.text)) if has_image(node) else result.append(node)
         return result
     elif len(old_nodes) == 1:
-        return main_job(old_nodes[0].text)
+        return main_job(old_nodes[0].text) if has_image(old_nodes[0]) else [old_nodes[0]] 
     else:
         return result
 
@@ -178,14 +188,43 @@ def split_nodes_link(old_nodes):
     result = []
     if len(old_nodes) > 1:
         for node in old_nodes:
-            result.append(main_job(node.text))
+            result.append(main_job(node.text)) if has_link(node) else result.append(node)
         return result
     elif len(old_nodes) == 1:
-        return main_job(old_nodes[0].text)
+        return main_job(old_nodes[0].text) if has_link(old_nodes[0]) else [old_nodes[0]] 
     else:
         return result
     
-    def text_to_textnodes(text):
-        c
-        for delimiter in delimiters:
-            pass
+def text_to_textnodes(text):
+    res = [TextNode(text, TextType.NORMAL)]
+    delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
+    ### TEXT LOOP
+
+    for delimiter, delimiter_type in delimiters:
+        tmp = []
+        for text_element in res:
+            tmp.extend(split_nodes_delimiter([text_element], delimiter, delimiter_type))
+        res = tmp
+
+    ### IMAGE LOOP
+
+    res2 = []
+    for node in res:
+        tmp2 = []
+        if node.text_type == TextType.NORMAL:
+            tmp2.extend(split_nodes_image([node]))
+        else: 
+            tmp2.append(node)
+        res2.extend(tmp2)
+
+    ### LINK LOOP
+
+    res3 = []
+    for node in res2:
+        tmp3 = []
+        if node.text_type == TextType.NORMAL:
+            tmp3.extend(split_nodes_link([node]))
+        else: 
+            tmp3.append(node)
+        res3.extend(tmp3)
+    return res3

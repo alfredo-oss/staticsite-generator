@@ -12,17 +12,38 @@ import re
 text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
 delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
 
-res = [text]
+res = [TextNode(text,TextType.NORMAL)]
+
+### TEXT LOOP
 
 for delimiter, delimiter_type in delimiters:
     tmp = []
     for text_element in res:
-        #print(text_element)
-        #print(delimiter, delimiter_type)
-        tmp_txt_node = TextNode(text_element, TextType.NORMAL)
-        tmp = split_nodes_delimiter([tmp_txt_node], delimiter, delimiter_type)
-        print(tmp)
-        #print(split_nodes_delimiter([TextNode(text_element, TextType.NORMAL)]))
-     
+        tmp.extend(split_nodes_delimiter([text_element], delimiter, delimiter_type))
+    res = tmp
 
-#print(res)
+### IMAGE LOOP
+
+res2 = []
+for node in res:
+    tmp2 = []
+    if node.text_type == TextType.NORMAL:
+        tmp2.extend(split_nodes_image([node]))
+    else: 
+        tmp2.append(node)
+    res2.extend(tmp2)
+
+### LINK LOOP
+
+res3 = []
+for node in res2:
+    tmp3 = []
+    if node.text_type == TextType.NORMAL:
+        tmp3.extend(split_nodes_link([node]))
+    else: 
+        tmp3.append(node)
+    res3.extend(tmp3)
+
+print(f"FINAL RESULT: {res3}")
+
+
