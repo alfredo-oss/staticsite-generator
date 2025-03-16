@@ -131,11 +131,9 @@ def split_nodes_image(old_nodes):
 
         for cleansed in cleaned:
             final_result.append(TextNode(cleansed, TextType.NORMAL))
-            print(f"TextNode({cleansed}, TextType.NORMAL)")
             if match_queue:
                 alt, url = match_queue.popleft()
                 final_result.append(TextNode(alt, TextType.IMAGE, url))
-                print(f"TextNode({alt}, TextType.IMAGE, {url})")
         return final_result
     
     result = []
@@ -178,11 +176,9 @@ def split_nodes_link(old_nodes):
 
         for cleansed in cleaned:
             final_result.append(TextNode(cleansed, TextType.NORMAL))
-            print(f"TextNode({cleansed}, TextType.NORMAL)")
             if match_queue:
                 alt, url = match_queue.popleft()
                 final_result.append(TextNode(alt, TextType.LINK, url))
-                print(f"TextNode({alt}, TextType.IMAGE, {url})")
         return final_result
     
     result = []
@@ -228,3 +224,14 @@ def text_to_textnodes(text):
             tmp3.append(node)
         res3.extend(tmp3)
     return res3
+
+def markdown_to_blocks(markdown):
+    splits  = markdown.split("\n\n")
+    splits = list(map(lambda x: x.strip(), splits))
+    res = []
+    for element in splits:
+        if element:
+            res.append(element)
+        else:
+            continue
+    return res
