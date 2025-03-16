@@ -1,5 +1,6 @@
 from service.nodes.textnode import TextNode, TextType
 from service.nodes.leafnode import LeafNode
+from service.blocks.block_types import BlockType
 from collections import deque
 import re
 
@@ -235,3 +236,18 @@ def markdown_to_blocks(markdown):
         else:
             continue
     return res
+
+def block_to_block(block) -> BlockType:
+    ol_exp = re.compile(r"\d{1}.")
+    if block[0] == "#":
+        return BlockType.heading
+    elif block[:3] == "```":
+        return BlockType.code
+    elif block[0] == ">":
+        return BlockType.quote
+    elif block[0] == "-":
+        return BlockType.unordered_list
+    elif block[:2] == ol_exp:
+        return BlockType.ordered_list
+    else:
+        return BlockType.paragraph
