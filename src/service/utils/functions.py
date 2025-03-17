@@ -238,7 +238,6 @@ def markdown_to_blocks(markdown):
     return res
 
 def block_to_block(block) -> BlockType:
-    ol_exp = re.compile(r"\d{1}.")
     if block[0] == "#":
         return BlockType.heading
     elif block[:3] == "```":
@@ -251,3 +250,9 @@ def block_to_block(block) -> BlockType:
         return BlockType.ordered_list
     else:
         return BlockType.paragraph
+    
+def markdown_to_html_node(markdown):
+    # converts raw markdown to a single parent
+    # HTMLNode, which contains many child
+    # HTMLNode objects representing the nested elements
+    pass
