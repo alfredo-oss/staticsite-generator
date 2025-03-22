@@ -1,9 +1,5 @@
 from service.utils.functions import (
-    text_to_textnodes,
-    markdown_to_blocks,
-    markdown_to_html_node,
-    text_node_to_html_node,
-    block_to_block
+    markdown_to_html_node
     )
 from service.blocks.block_types import BlockType
 from service.nodes.parentnode import ParentNode
@@ -12,11 +8,11 @@ import unittest
 class TestMdToHTML(unittest.TestCase):
     def test_paragraphs(self):
         md = """
-    This is **bolded** paragraph
-    text in a p
-    tag here
+This is **bolded** paragraph
+text in a p
+tag here
 
-    This is another paragraph with _italic_ text and `code` here
+This is another paragraph with _italic_ text and `code` here
 
     """
 
@@ -29,15 +25,18 @@ class TestMdToHTML(unittest.TestCase):
 
     def test_codeblock(self):
         md = """
-    ```
-    This is text that _should_ remain
-    the **same** even with inline stuff
-    ```
-    """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
 
         node = markdown_to_html_node(md)
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+            """<div><pre><code>
+This is text that _should_ remain
+the **same** even with inline stuff
+</code></pre></div>""",
         )

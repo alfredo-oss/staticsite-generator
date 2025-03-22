@@ -26,7 +26,7 @@ the **same** even with inline stuff
 
 expected_result = "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>"
 
-md_blocks = markdown_to_blocks(md2)
+md_blocks = markdown_to_blocks(md)
 
 ### testing block transformation from text to HTML 
 # raw text
@@ -43,7 +43,7 @@ res = []
 for block in md_blocks:
     match block_to_block(block):
         case BlockType.paragraph:
-            res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+            res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' ')))))) #.replace('\n', ' ')
         case BlockType.heading:
             res.append(ParentNode('h1', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.code:
@@ -53,5 +53,5 @@ for block in md_blocks:
         case BlockType.unordered_list:
             res.append(ParentNode('ul', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.ordered_list:
-            res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+            res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block).replace('\n', ' ')))))
 print(ParentNode('div',res).to_html())
