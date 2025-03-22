@@ -6,6 +6,7 @@ from service.utils.functions import (
     )
 from service.blocks.block_types import BlockType
 from service.nodes.parentnode import ParentNode
+from service.nodes.leafnode import LeafNode
 
 ## once this is separated, we have to keep in mind that it needs to be joined again
 md = """
@@ -42,16 +43,15 @@ res = []
 for block in md_blocks:
     match block_to_block(block):
         case BlockType.paragraph:
-            res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
+            res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.heading:
-            res.append(ParentNode('h1', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
+            res.append(ParentNode('h1', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.code:
-            res.append( '<pre>' + '<code>' + block.replace("```", "") + '</code>' + '</pre>')
+            res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
         case BlockType.quote:
-            res.append(ParentNode('blockquote', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
+            res.append(ParentNode('blockquote', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.unordered_list:
-            res.append(ParentNode('ul', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
+            res.append(ParentNode('ul', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.ordered_list:
-            res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
-final = ''.join(res)
-print('<div>' + final + '</div>')
+            res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+print(ParentNode('div',res).to_html())

@@ -254,18 +254,6 @@ def block_to_block(block) -> BlockType:
     
 def markdown_to_html_node(markdown):
     md_blocks = markdown_to_blocks(markdown)
-
-    ### testing block transformation from text to HTML 
-    # raw text
-
-    multiple_text_nodes = list(map(lambda x: text_to_textnodes(x.replace('\n', ' ')), md_blocks))
-    #print(multiple_text_nodes)
-    ## transform to normal TextNode
-    #block_text_nodes = text_to_textnodes(block)
-    html_nodes = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y), x)), multiple_text_nodes))
-    #print(html_nodes[0])
-    #html_nodes = list(map(lambda x: (text_node_to_html_node(x)).to_html(), block_text_nodes))
-
     res = []
     for block in md_blocks:
         match block_to_block(block):
