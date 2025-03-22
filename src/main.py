@@ -1,8 +1,10 @@
-from service.nodes import TextNode
-
+from service.nodes.textnode import TextNode
+from service.utils.functions import copy_resources_recursively
 def main():
-    new_node = TextNode("This is a text node", "bold", "https://www.boot.dev")
-    print(new_node)
+    source_path = "static"
+    destination_path = "public"
+    copy_resources_recursively(source_path, destination_path)
+
 
 if __name__ == "__main__":
     main()

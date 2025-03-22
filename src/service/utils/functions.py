@@ -4,6 +4,8 @@ from service.blocks.block_types import BlockType
 from service.nodes.parentnode import ParentNode
 from collections import deque
 import re
+import os
+import shutil
 
 def text_node_to_html_node(text_node: TextNode):
     match text_node.text_type:
@@ -270,3 +272,17 @@ def markdown_to_html_node(markdown):
             case BlockType.ordered_list:
                 res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
     return ParentNode('div', res)
+
+def copy_resources_recursively(source_path: str, destination_path: str):
+    # [1] we need to delete all the contents from the target directory
+    if os.path.exists(destination_path):
+        shutil.rmtree(destination_path)
+        print(f"DELETED ALL CONTENT FROM TARGET DIRECTORY")
+    os.mkdir(destination_path)
+    print("CREATED DESTINATION PATH")
+
+    print("-----------########----------#####-------####---")
+    print(f"PATHS CONTAINED IN SOURCE: {os.listdir(source_path)}")
+    # [2] copy recursively all the contents from the source directory, to the target directory
+    print(f"PATHS CONTAINED IN TARGET: {os.listdir(destination_path)}")
+    
