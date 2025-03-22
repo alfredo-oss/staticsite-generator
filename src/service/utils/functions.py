@@ -278,11 +278,16 @@ def copy_resources_recursively(source_path: str, destination_path: str):
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
         print(f"DELETED ALL CONTENT FROM TARGET DIRECTORY")
+
     os.mkdir(destination_path)
     print("CREATED DESTINATION PATH")
 
     print("-----------########----------#####-------####---")
+    ### the following list is the one that needs to be traversed recursively
+
     print(f"PATHS CONTAINED IN SOURCE: {os.listdir(source_path)}")
+    
+    paths_to_copy = ""
     # [2] copy recursively all the contents from the source directory, to the target directory
     print(f"PATHS CONTAINED IN TARGET: {os.listdir(destination_path)}")
     
