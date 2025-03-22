@@ -16,10 +16,16 @@ tag here
 This is another paragraph with _italic_ text and `code` here
 
 """
+md2 = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+"""
 
 expected_result = "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>"
 
-md_blocks = markdown_to_blocks(md)
+md_blocks = markdown_to_blocks(md2)
 
 ### testing block transformation from text to HTML 
 # raw text
@@ -40,7 +46,7 @@ for block in md_blocks:
         case BlockType.heading:
             res.append(ParentNode('h1', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
         case BlockType.code:
-            res.append(ParentNode('code', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
+            res.append( '<pre>' + '<code>' + block.replace("```", "") + '</code>' + '</pre>')
         case BlockType.quote:
             res.append(ParentNode('blockquote', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))).to_html())
         case BlockType.unordered_list:
