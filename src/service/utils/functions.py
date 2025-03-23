@@ -34,19 +34,22 @@ def text_node_to_html_node(text_node: TextNode):
                 )
         
         case TextType.LINK:
+            print(text_node)
             return LeafNode(
                 "a",
                 text_node.text,
-                {"href":text_node.url}
+                **{
+                    "href": text_node.url
+                }
                 )
         
         case TextType.IMAGE:
             return LeafNode(
                 "img",
                 "",
-                {
-                    "src":text_node.url,
-                    "alt":text_node.text
+                **{
+                    "src": text_node.url,
+                    "alt": text_node.text
                 }
                 )
         
@@ -268,9 +271,9 @@ def markdown_to_html_node(markdown):
             case BlockType.quote:
                 res.append(ParentNode('blockquote', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
             case BlockType.unordered_list:
-                res.append(ParentNode('ul', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('ul', list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))))
             case BlockType.ordered_list:
-                res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('ol', list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))))
     return ParentNode('div', res)
 
 def copy_resources_recursively(target_path: str, destination_path: str):
@@ -304,7 +307,9 @@ def extract_title(markdown):
     blocks = markdown_to_blocks(markdown)
     if "# " in blocks[0]:
         title = blocks[0]
-        return title.replace('# ', '')
+        final_title = title.replace('# ', '')
+        final_markdown = markdown.replace(blocks[0], '')
+        return final_title, final_markdown
     else:
         raise Exception("your file needs a title")
     
@@ -312,10 +317,11 @@ def generate_page(from_path, template_path, dest_path):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as source_file:
         md_file = source_file.read()
-    print(md_file)
-    #html_file = markdown_to_html_node(md_file).to_html()
-    #title = extract_title(md_file)
+
+    title, md_file = extract_title(md_file)
+    html_file = markdown_to_html_node(md_file).to_html()
 
     with open(template_path) as template_file:
         loaded_template_file = template_file.read()
-    print(loaded_template_file)
+    print(loaded_template_file.replace('{{ Title }}', title))
+    print(loaded_template_file.replace("{{ Content }}", html_file))
