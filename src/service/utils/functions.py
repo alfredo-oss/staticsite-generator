@@ -274,7 +274,7 @@ def markdown_to_html_node(markdown):
     return ParentNode('div', res)
 
 def copy_resources_recursively(target_path: str, destination_path: str):
-    
+
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
 
@@ -290,7 +290,6 @@ def copy_resources_recursively(target_path: str, destination_path: str):
             objective_path = source_path + "/" + path
             if os.path.isfile(objective_path):
                 paths_to_copy.append(objective_path)
-                print("Found File")
                 return
             else:
                 os.mkdir(objective_path.replace(target_path, destination_path))
