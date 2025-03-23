@@ -244,11 +244,11 @@ def markdown_to_blocks(markdown):
     return res
 
 def block_to_block(block) -> BlockType:
-    if block[0] == "#":
+    if block[:3] == "## ":
         return BlockType.heading
     elif block[:3] == "```":
         return BlockType.code
-    elif block[0] == ">":
+    elif block[:2] == "> ":
         return BlockType.quote
     elif block[0] == "-":
         return BlockType.unordered_list
@@ -265,7 +265,7 @@ def markdown_to_html_node(markdown):
             case BlockType.paragraph:
                 res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
             case BlockType.heading:
-                res.append(ParentNode('h1', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('h2', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
             case BlockType.code:
                 res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.quote:

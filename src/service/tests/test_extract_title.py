@@ -21,5 +21,5 @@ class TestExtractTitle(unittest.TestCase):
 - [The Unparalleled Majesty of "The Lord of the Rings"](/blog/majesty)
 
 """
-        title = extract_title(md)
+        title, md = extract_title(md)
         self.assertEqual(title, "Tolkien Fan Club")

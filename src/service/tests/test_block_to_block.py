@@ -4,7 +4,7 @@ import unittest
 
 class TestBlockToBlock(unittest.TestCase):
     def test_heading_block(self):
-        block = "# This is a heading"
+        block = "## This is a heading"
         block_type = block_to_block(block)
         self.assertEqual(block_type, BlockType.heading)
 
