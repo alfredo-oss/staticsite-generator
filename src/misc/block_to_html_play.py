@@ -54,4 +54,4 @@ for block in md_blocks:
             res.append(ParentNode('ul', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
         case BlockType.ordered_list:
             res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block).replace('\n', ' ')))))
-print(ParentNode('div',res).to_html())
+print(ParentNode('div',res))

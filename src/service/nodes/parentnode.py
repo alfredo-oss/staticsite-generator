@@ -6,8 +6,6 @@ class ParentNode(HTMLNode):
         super().__init__(tag, None, children, **kwargs)
     
     def to_html(self):
-        print(self.tag)
-        print(self.children)
         if not self.tag:
             raise ValueError("tag is required")
         elif not self.children:

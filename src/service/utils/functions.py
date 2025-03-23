@@ -34,7 +34,6 @@ def text_node_to_html_node(text_node: TextNode):
                 )
         
         case TextType.LINK:
-            print(text_node)
             return LeafNode(
                 "a",
                 text_node.text,
@@ -124,23 +123,25 @@ def split_nodes_image(old_nodes):
                 tmp.extend(text_element.split(delimiter))
             res=tmp
 
-
         cleaned = []
         for element in res:
             if element == "":
                 continue
             else:
                 cleaned.append(element)
-
         match_queue = deque()
+
         for imgs in matches:
             match_queue.append(imgs)
-
-        for cleansed in cleaned:
-            final_result.append(TextNode(cleansed, TextType.NORMAL))
-            if match_queue:
-                alt, url = match_queue.popleft()
-                final_result.append(TextNode(alt, TextType.IMAGE, url))
+        if cleaned:
+            for cleansed in cleaned:
+                final_result.append(TextNode(cleansed, TextType.NORMAL))
+                if match_queue:
+                    alt, url = match_queue.popleft()
+                    final_result.append(TextNode(alt, TextType.IMAGE, url))
+        else:
+            alt, url = match_queue.popleft()
+            final_result.append(TextNode(alt, TextType.IMAGE, url))
         return final_result
     
     result = []
@@ -149,7 +150,8 @@ def split_nodes_image(old_nodes):
             result.append(main_job(node.text)) if has_image(node) else result.append(node)
         return result
     elif len(old_nodes) == 1:
-        return main_job(old_nodes[0].text) if has_image(old_nodes[0]) else [old_nodes[0]] 
+        single_list = main_job(old_nodes[0].text)
+        return single_list[0] if has_image(old_nodes[0]) else [old_nodes[0]] 
     else:
         return result
 
@@ -194,15 +196,16 @@ def split_nodes_link(old_nodes):
             result.append(main_job(node.text)) if has_link(node) else result.append(node)
         return result
     elif len(old_nodes) == 1:
-        return main_job(old_nodes[0].text) if has_link(old_nodes[0]) else [old_nodes[0]] 
+        single_list = main_job(old_nodes[0].text)
+        return single_list[0] if has_link(old_nodes[0]) else [old_nodes[0]] 
     else:
         return result
     
 def text_to_textnodes(text):
     res = [TextNode(text, TextType.NORMAL)]
     delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
+    
     ### TEXT LOOP
-
     for delimiter, delimiter_type in delimiters:
         tmp = []
         for text_element in res:
@@ -210,25 +213,33 @@ def text_to_textnodes(text):
         res = tmp
 
     ### IMAGE LOOP
-
     res2 = []
     for node in res:
         tmp2 = []
         if node.text_type == TextType.NORMAL:
-            tmp2.extend(split_nodes_image([node]))
+            img_node = split_nodes_image([node])
+            if type(img_node) == list:
+                tmp2.extend(split_nodes_image([node]))
+            else:
+                tmp2.extend([split_nodes_image([node])])
         else: 
-            tmp2.append(node)
+            tmp2.extend([node])
         res2.extend(tmp2)
 
     ### LINK LOOP
-
     res3 = []
     for node in res2:
         tmp3 = []
+        if isinstance(node, list):
+            node = node[0] 
         if node.text_type == TextType.NORMAL:
-            tmp3.extend(split_nodes_link([node]))
+            link_node = split_nodes_link([node])
+            if type(link_node) == list:
+                tmp3.extend(split_nodes_link([node]))
+            else:
+                tmp3.extend([split_nodes_link([node])])
         else: 
-            tmp3.append(node)
+            tmp3.extend([node])
         res3.extend(tmp3)
     return res3
 
@@ -261,20 +272,31 @@ def markdown_to_html_node(markdown):
     md_blocks = markdown_to_blocks(markdown)
     res = []
     for block in md_blocks:
+        if block_to_block(block) == BlockType.ordered_list or block_to_block(block) == BlockType.unordered_list:
+            splits = block.split('\n')
+            for split in splits:
+                print(text_to_textnodes(split))
+        else: 
+            single_val = text_to_textnodes(block.replace('\n', ' '))
+            print(single_val)
+        """
+        value = list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))
+        list_val = list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))
         match block_to_block(block):
             case BlockType.paragraph:
-                res.append(ParentNode('p', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('p', value)) # need to construct a function that inspects for childrends
             case BlockType.heading:
-                res.append(ParentNode('h2', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('h2', value))
             case BlockType.code:
                 res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.quote:
-                res.append(ParentNode('blockquote', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('blockquote', value))
             case BlockType.unordered_list:
-                res.append(ParentNode('ul', list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('ul', list_val))
             case BlockType.ordered_list:
-                res.append(ParentNode('ol', list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))))
+                res.append(ParentNode('ol', list_val))
     return ParentNode('div', res)
+    """
 
 def copy_resources_recursively(target_path: str, destination_path: str):
 
@@ -319,9 +341,14 @@ def generate_page(from_path, template_path, dest_path):
         md_file = source_file.read()
 
     title, md_file = extract_title(md_file)
-    html_file = markdown_to_html_node(md_file).to_html()
-
+    markdown_to_html_node(md_file)
+    """
+    #print(md_object_file)
+    html_file = md_object_file.to_html()
+    print("-------- HTML PRINT ---------")
+    print(html_file)
     with open(template_path) as template_file:
         loaded_template_file = template_file.read()
-    print(loaded_template_file.replace('{{ Title }}', title))
-    print(loaded_template_file.replace("{{ Content }}", html_file))
+    #print(loaded_template_file.replace('{{ Title }}', title)) 
+    #print(loaded_template_file.replace('{{ Content }}', html_file))
+    """
