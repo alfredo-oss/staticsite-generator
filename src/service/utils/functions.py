@@ -273,21 +273,32 @@ def markdown_to_html_node(markdown):
                 res.append(ParentNode('ol', list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))))
     return ParentNode('div', res)
 
-def copy_resources_recursively(source_path: str, destination_path: str):
-    # [1] we need to delete all the contents from the target directory
+def copy_resources_recursively(target_path: str, destination_path: str):
+    
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
-        print(f"DELETED ALL CONTENT FROM TARGET DIRECTORY")
 
     os.mkdir(destination_path)
-    print("CREATED DESTINATION PATH")
 
-    print("-----------########----------#####-------####---")
-    ### the following list is the one that needs to be traversed recursively
+    recursive_paths = os.listdir(target_path)
 
-    print(f"PATHS CONTAINED IN SOURCE: {os.listdir(source_path)}")
-    
-    paths_to_copy = ""
-    # [2] copy recursively all the contents from the source directory, to the target directory
-    print(f"PATHS CONTAINED IN TARGET: {os.listdir(destination_path)}")
+    paths_to_copy = []
+    def recursive_copy(source_path, recursive_paths):
+        nonlocal target_path
+        nonlocal destination_path
+        for path in recursive_paths:
+            objective_path = source_path + "/" + path
+            if os.path.isfile(objective_path):
+                paths_to_copy.append(objective_path)
+                print("Found File")
+                return
+            else:
+                os.mkdir(objective_path.replace(target_path, destination_path))
+                recursive_copy(objective_path, os.listdir(objective_path))
+
+    recursive_copy(target_path, recursive_paths)
+
+    for path_to_copy in paths_to_copy:
+        shutil.copy(path_to_copy, path_to_copy.replace(target_path, destination_path))
+
     
