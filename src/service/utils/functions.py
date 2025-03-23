@@ -300,4 +300,22 @@ def copy_resources_recursively(target_path: str, destination_path: str):
     for path_to_copy in paths_to_copy:
         shutil.copy(path_to_copy, path_to_copy.replace(target_path, destination_path))
 
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    if "# " in blocks[0]:
+        title = blocks[0]
+        return title.replace('# ', '')
+    else:
+        raise Exception("your file needs a title")
     
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path) as source_file:
+        md_file = source_file.read()
+    print(md_file)
+    #html_file = markdown_to_html_node(md_file).to_html()
+    #title = extract_title(md_file)
+
+    with open(template_path) as template_file:
+        loaded_template_file = template_file.read()
+    print(loaded_template_file)
