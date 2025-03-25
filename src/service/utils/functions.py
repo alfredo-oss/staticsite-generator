@@ -183,11 +183,15 @@ def split_nodes_link(old_nodes):
         for imgs in matches:
             match_queue.append(imgs)
 
-        for cleansed in cleaned:
-            final_result.append(TextNode(cleansed, TextType.NORMAL))
-            if match_queue:
-                alt, url = match_queue.popleft()
-                final_result.append(TextNode(alt, TextType.LINK, url))
+        if cleaned:
+            for cleansed in cleaned:
+                final_result.append(TextNode(cleansed, TextType.NORMAL))
+                if match_queue:
+                    alt, url = match_queue.popleft()
+                    final_result.append(TextNode(alt, TextType.LINK, url))
+        else:
+            alt, url = match_queue.popleft()
+            final_result.append(TextNode(alt, TextType.LINK, url))
         return final_result
     
     result = []
@@ -202,6 +206,7 @@ def split_nodes_link(old_nodes):
         return result
     
 def text_to_textnodes(text):
+    print(text)
     res = [TextNode(text, TextType.NORMAL)]
     delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
     
@@ -211,7 +216,7 @@ def text_to_textnodes(text):
         for text_element in res:
             tmp.extend(split_nodes_delimiter([text_element], delimiter, delimiter_type))
         res = tmp
-
+    print(res)
     ### IMAGE LOOP
     res2 = []
     for node in res:
@@ -225,22 +230,19 @@ def text_to_textnodes(text):
         else: 
             tmp2.extend([node])
         res2.extend(tmp2)
+    print(res2)
 
     ### LINK LOOP
     res3 = []
     for node in res2:
         tmp3 = []
-        if isinstance(node, list):
-            node = node[0] 
-        if node.text_type == TextType.NORMAL:
-            link_node = split_nodes_link([node])
-            if type(link_node) == list:
-                tmp3.extend(split_nodes_link([node]))
-            else:
-                tmp3.extend([split_nodes_link([node])])
+        print(node)
+        if has_link(node):
+            print(split_nodes_link([node]))
         else: 
             tmp3.extend([node])
         res3.extend(tmp3)
+    print(res3)
     return res3
 
 def markdown_to_blocks(markdown):
@@ -270,15 +272,24 @@ def block_to_block(block) -> BlockType:
     
 def markdown_to_html_node(markdown):
     md_blocks = markdown_to_blocks(markdown)
-    res = []
     for block in md_blocks:
-        if block_to_block(block) == BlockType.ordered_list or block_to_block(block) == BlockType.unordered_list:
+        res = []
+        if block_to_block(block) == BlockType.ordered_list:
             splits = block.split('\n')
+            i = 1
             for split in splits:
-                print(text_to_textnodes(split))
+                list_node = ParentNode('li',list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(split))))
+                res.append(list_node)
+        elif block_to_block(block) == BlockType.unordered_list:
+            splits = block.split('\n')
+            i = 1
+            for split in splits:
+                list_node = ParentNode('li',list(map(lambda x: text_node_to_html_node(x), text_to_textnodes(split))))
+                res.append(list_node)
         else: 
-            single_val = text_to_textnodes(block.replace('\n', ' '))
-            print(single_val)
+            #print(f"TEXT NODE VERSION: {text_to_textnodes(block.replace('\n', ' '))}")
+            #print(f"HTML VERSION: {list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(block.replace('\n', ' '))))}")
+            pass
         """
         value = list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))
         list_val = list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))
