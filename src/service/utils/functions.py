@@ -133,6 +133,7 @@ def split_nodes_image(old_nodes):
 
         for imgs in matches:
             match_queue.append(imgs)
+
         if cleaned:
             for cleansed in cleaned:
                 final_result.append(TextNode(cleansed, TextType.NORMAL))
@@ -180,8 +181,8 @@ def split_nodes_link(old_nodes):
                 cleaned.append(element)
 
         match_queue = deque()
-        for imgs in matches:
-            match_queue.append(imgs)
+        for links in matches:
+            match_queue.append(links)
 
         if cleaned:
             for cleansed in cleaned:
@@ -201,12 +202,11 @@ def split_nodes_link(old_nodes):
         return result
     elif len(old_nodes) == 1:
         single_list = main_job(old_nodes[0].text)
-        return single_list[0] if has_link(old_nodes[0]) else [old_nodes[0]] 
+        return single_list if has_link(old_nodes[0]) else [old_nodes[0]] 
     else:
         return result
     
 def text_to_textnodes(text):
-    print(text)
     res = [TextNode(text, TextType.NORMAL)]
     delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
     
@@ -216,7 +216,6 @@ def text_to_textnodes(text):
         for text_element in res:
             tmp.extend(split_nodes_delimiter([text_element], delimiter, delimiter_type))
         res = tmp
-    print(res)
     ### IMAGE LOOP
     res2 = []
     for node in res:
@@ -230,19 +229,17 @@ def text_to_textnodes(text):
         else: 
             tmp2.extend([node])
         res2.extend(tmp2)
-    print(res2)
 
     ### LINK LOOP
     res3 = []
     for node in res2:
         tmp3 = []
-        print(node)
         if has_link(node):
-            print(split_nodes_link([node]))
+            addition = split_nodes_link([node])
+            tmp3.append(addition)
         else: 
             tmp3.extend([node])
         res3.extend(tmp3)
-    print(res3)
     return res3
 
 def markdown_to_blocks(markdown):
@@ -278,14 +275,16 @@ def markdown_to_html_node(markdown):
             splits = block.split('\n')
             i = 1
             for split in splits:
-                list_node = ParentNode('li',list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(split))))
+                list_node = ParentNode('li',list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split))))
                 res.append(list_node)
+            print(ParentNode('ol', res))
         elif block_to_block(block) == BlockType.unordered_list:
             splits = block.split('\n')
             i = 1
             for split in splits:
-                list_node = ParentNode('li',list(map(lambda x: text_node_to_html_node(x), text_to_textnodes(split))))
+                list_node = ParentNode('li',list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split))))
                 res.append(list_node)
+            print(ParentNode('ul', res))    
         else: 
             #print(f"TEXT NODE VERSION: {text_to_textnodes(block.replace('\n', ' '))}")
             #print(f"HTML VERSION: {list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(block.replace('\n', ' '))))}")
