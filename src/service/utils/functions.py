@@ -275,16 +275,18 @@ def markdown_to_html_node(markdown):
             splits = block.split('\n')
             i = 1
             for split in splits:
-                list_node = ParentNode('li',list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split))))
+                list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
+                list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                 res.append(list_node)
-            print(ParentNode('ol', res))
+            print(ParentNode('ol', res).to_html())
         elif block_to_block(block) == BlockType.unordered_list:
             splits = block.split('\n')
             i = 1
             for split in splits:
-                list_node = ParentNode('li',list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split))))
+                list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
+                list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                 res.append(list_node)
-            print(ParentNode('ul', res))    
+            print(ParentNode('ul', res).to_html())    
         else: 
             #print(f"TEXT NODE VERSION: {text_to_textnodes(block.replace('\n', ' '))}")
             #print(f"HTML VERSION: {list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(block.replace('\n', ' '))))}")
