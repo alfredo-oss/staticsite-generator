@@ -269,46 +269,64 @@ def block_to_block(block) -> BlockType:
     
 def markdown_to_html_node(markdown):
     md_blocks = markdown_to_blocks(markdown)
+    res = []
     for block in md_blocks:
-        res = []
+        """
         if block_to_block(block) == BlockType.ordered_list:
+            list_res = []
             splits = block.split('\n')
             i = 1
             for split in splits:
                 list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                 list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
-                res.append(list_node)
-            print(ParentNode('ol', res).to_html())
+                list_res.append(list_node)
+            res.append(ParentNode('ol', list_res))
         elif block_to_block(block) == BlockType.unordered_list:
+            list_res = []
             splits = block.split('\n')
             i = 1
             for split in splits:
                 list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                 list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
-                res.append(list_node)
-            print(ParentNode('ul', res).to_html())    
+                list_res.append(list_node)
+            res.append(ParentNode('ul', list_res))    
         else: 
             #print(f"TEXT NODE VERSION: {text_to_textnodes(block.replace('\n', ' '))}")
             #print(f"HTML VERSION: {list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(block.replace('\n', ' '))))}")
             pass
-        """
-        value = list(map(lambda y: text_node_to_html_node(y), text_to_textnodes(block.replace('\n', ' '))))
-        list_val = list(map(lambda y: LeafNode('li',text_node_to_html_node(y)), text_to_textnodes(block.replace('\n', ' '))))
+        """   
         match block_to_block(block):
             case BlockType.paragraph:
-                res.append(ParentNode('p', value)) # need to construct a function that inspects for childrends
+                value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
+                res.append(ParentNode('p', value[0] if isinstance(value[0], list) else value)) 
             case BlockType.heading:
-                res.append(ParentNode('h2', value))
+                value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
+                res.append(ParentNode('h2', value[0] if isinstance(value[0], list) else value))
             case BlockType.code:
                 res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.quote:
-                res.append(ParentNode('blockquote', value))
+                value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
+                res.append(ParentNode('blockquote', value[0] if isinstance(value[0], list) else value))
             case BlockType.unordered_list:
-                res.append(ParentNode('ul', list_val))
+                list_res = []
+                splits = block.split('\n')
+                i = 1
+                for split in splits:
+                    list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
+                    list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
+                    list_res.append(list_node)
+                res.append(ParentNode('ul', list_res))    
             case BlockType.ordered_list:
-                res.append(ParentNode('ol', list_val))
+                list_res = []
+                splits = block.split('\n')
+                i = 1
+                for split in splits:
+                    list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
+                    list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
+                    list_res.append(list_node)
+                res.append(ParentNode('ol', list_res))
     return ParentNode('div', res)
-    """
+
 
 def copy_resources_recursively(target_path: str, destination_path: str):
 
@@ -353,9 +371,8 @@ def generate_page(from_path, template_path, dest_path):
         md_file = source_file.read()
 
     title, md_file = extract_title(md_file)
-    markdown_to_html_node(md_file)
-    """
-    #print(md_object_file)
+    md_object_file = markdown_to_html_node(md_file)
+
     html_file = md_object_file.to_html()
     print("-------- HTML PRINT ---------")
     print(html_file)
@@ -363,4 +380,3 @@ def generate_page(from_path, template_path, dest_path):
         loaded_template_file = template_file.read()
     #print(loaded_template_file.replace('{{ Title }}', title)) 
     #print(loaded_template_file.replace('{{ Content }}', html_file))
-    """
