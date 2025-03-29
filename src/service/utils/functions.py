@@ -45,7 +45,7 @@ def text_node_to_html_node(text_node: TextNode):
         case TextType.IMAGE:
             return LeafNode(
                 "img",
-                "",
+                " ",
                 **{
                     "src": text_node.url,
                     "alt": text_node.text
@@ -297,16 +297,25 @@ def markdown_to_html_node(markdown):
         """   
         match block_to_block(block):
             case BlockType.paragraph:
-                value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
-                res.append(ParentNode('p', value[0] if isinstance(value[0], list) else value)) 
+                block_replacement = text_to_textnodes(block.replace('\n', ' '))
+                internal_conversion = []
+                if isinstance(block_replacement[0], list):
+                    for blockr in block_replacement[0]:
+                        conversion = text_node_to_html_node(blockr) if isinstance(blockr, TextNode) else text_node_to_html_node(blockr[0])
+                        internal_conversion.append(conversion)
+                else:
+                    for blockr in block_replacement:
+                        conversion = text_node_to_html_node(blockr) if isinstance(blockr, TextNode) else text_node_to_html_node(blockr[0])
+                        internal_conversion.append(conversion)
+                res.append(ParentNode('p', internal_conversion))
             case BlockType.heading:
                 value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
                 res.append(ParentNode('h2', value[0] if isinstance(value[0], list) else value))
-            case BlockType.code:
-                res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.quote:
                 value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
                 res.append(ParentNode('blockquote', value[0] if isinstance(value[0], list) else value))
+            case BlockType.code:
+                res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.unordered_list:
                 list_res = []
                 splits = block.split('\n')
@@ -378,5 +387,5 @@ def generate_page(from_path, template_path, dest_path):
     print(html_file)
     with open(template_path) as template_file:
         loaded_template_file = template_file.read()
-    #print(loaded_template_file.replace('{{ Title }}', title)) 
-    #print(loaded_template_file.replace('{{ Content }}', html_file))
+    print(loaded_template_file.replace('{{ Title }}', title)) 
+    print(loaded_template_file.replace('{{ Content }}', html_file))
