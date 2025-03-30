@@ -368,24 +368,32 @@ def extract_title(markdown):
     blocks = markdown_to_blocks(markdown)
     if "# " in blocks[0]:
         title = blocks[0]
-        final_title = title.replace('# ', '')
-        final_markdown = markdown.replace(blocks[0], '')
-        return final_title, final_markdown
+        return title
     else:
         raise Exception("your file needs a title")
     
 def generate_page(from_path, template_path, dest_path):
+    dest_dir = os.path.dirname(dest_path)
+    os.makedirs(dest_dir, exist_ok=True)
+
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as source_file:
         md_file = source_file.read()
 
-    title, md_file = extract_title(md_file)
+    title = extract_title(md_file)
     md_object_file = markdown_to_html_node(md_file)
 
     html_file = md_object_file.to_html()
     print("-------- HTML PRINT ---------")
     print(html_file)
+
     with open(template_path) as template_file:
         loaded_template_file = template_file.read()
-    print(loaded_template_file.replace('{{ Title }}', title)) 
-    print(loaded_template_file.replace('{{ Content }}', html_file))
+
+    # These two lines were not updating the string — remember strings are immutable
+    loaded_template_file = loaded_template_file.replace('{{ Title }}', title)
+    loaded_template_file = loaded_template_file.replace('{{ Content }}', html_file)
+
+    with open(dest_path, 'w') as target_file:
+        target_file.write(loaded_template_file)
+        
