@@ -254,7 +254,7 @@ def markdown_to_blocks(markdown):
     return res
 
 def block_to_block(block) -> BlockType:
-    if block[:3] == "## ":
+    if block[:2] == "# " or block[:3] == "## " or block[:4] == "### " or block[:5] == "#### " or block[:6] == "##### " or block[:7] == "###### ":
         return BlockType.heading
     elif block[:3] == "```":
         return BlockType.code
@@ -271,30 +271,6 @@ def markdown_to_html_node(markdown):
     md_blocks = markdown_to_blocks(markdown)
     res = []
     for block in md_blocks:
-        """
-        if block_to_block(block) == BlockType.ordered_list:
-            list_res = []
-            splits = block.split('\n')
-            i = 1
-            for split in splits:
-                list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
-                list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
-                list_res.append(list_node)
-            res.append(ParentNode('ol', list_res))
-        elif block_to_block(block) == BlockType.unordered_list:
-            list_res = []
-            splits = block.split('\n')
-            i = 1
-            for split in splits:
-                list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
-                list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
-                list_res.append(list_node)
-            res.append(ParentNode('ul', list_res))    
-        else: 
-            #print(f"TEXT NODE VERSION: {text_to_textnodes(block.replace('\n', ' '))}")
-            #print(f"HTML VERSION: {list(map(lambda x: text_node_to_html_node(x),text_to_textnodes(block.replace('\n', ' '))))}")
-            pass
-        """   
         match block_to_block(block):
             case BlockType.paragraph:
                 block_replacement = text_to_textnodes(block.replace('\n', ' '))
@@ -309,11 +285,23 @@ def markdown_to_html_node(markdown):
                         internal_conversion.append(conversion)
                 res.append(ParentNode('p', internal_conversion))
             case BlockType.heading:
+                heading_level = count_sharp_symbol(block)
+                block = block.replace("#","")
+                block = block.strip()
                 value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
-                res.append(ParentNode('h2', value[0] if isinstance(value[0], list) else value))
+                res.append(ParentNode(f'h{heading_level}', value[0] if isinstance(value[0], list) else value))
             case BlockType.quote:
-                value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
-                res.append(ParentNode('blockquote', value[0] if isinstance(value[0], list) else value))
+                block_splits = block.split('\n')
+                cleaned_list = list(map(lambda x: x.replace(">", ""), block_splits))
+                super_clean = []
+                for element in cleaned_list:
+                    if not element:
+                        continue
+                    else:
+                        super_clean.append(element)
+                text_to_text_node_list = list(map(lambda x: text_to_textnodes(x), super_clean))
+                for list_node in text_to_text_node_list:
+                    res.append(LeafNode('blockquote', list_node[0].text.strip()))
             case BlockType.code:
                 res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.unordered_list:
@@ -321,6 +309,7 @@ def markdown_to_html_node(markdown):
                 splits = block.split('\n')
                 i = 1
                 for split in splits:
+                    split = clean_unordered_split(split)
                     list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                     list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                     list_res.append(list_node)
@@ -330,13 +319,21 @@ def markdown_to_html_node(markdown):
                 splits = block.split('\n')
                 i = 1
                 for split in splits:
+                    split = clean_ordered_split(split)
                     list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                     list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                     list_res.append(list_node)
                 res.append(ParentNode('ol', list_res))
     return ParentNode('div', res)
 
+def clean_ordered_split(split):
+    split = re.sub(r"\d{1}. ", "", split)
+    return split
 
+def clean_unordered_split(split):
+    split = re.sub(r"- ", "", split)
+    return split
+        
 def copy_resources_recursively(target_path: str, destination_path: str):
 
     if os.path.exists(destination_path):
@@ -372,6 +369,12 @@ def extract_title(markdown):
     else:
         raise Exception("your file needs a title")
     
+def count_sharp_symbol(block):
+    count = 0
+    for c in block:
+        if c == "#":
+            count += 1
+    return count
 def generate_page(from_path, template_path, dest_path):
     dest_dir = os.path.dirname(dest_path)
     os.makedirs(dest_dir, exist_ok=True)
@@ -381,12 +384,12 @@ def generate_page(from_path, template_path, dest_path):
         md_file = source_file.read()
 
     title = extract_title(md_file)
+    title = title.replace("#", "")
+    title = title.strip()
     md_object_file = markdown_to_html_node(md_file)
 
     html_file = md_object_file.to_html()
-    print("-------- HTML PRINT ---------")
-    print(html_file)
-
+    print(f"----Printing HTML: {html_file}")
     with open(template_path) as template_file:
         loaded_template_file = template_file.read()
 
