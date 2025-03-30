@@ -172,7 +172,6 @@ def split_nodes_link(old_nodes):
                 tmp.extend(text_element.split(delimiter))
             res=tmp
 
-
         cleaned = []
         for element in res:
             if element == "":
@@ -183,7 +182,6 @@ def split_nodes_link(old_nodes):
         match_queue = deque()
         for links in matches:
             match_queue.append(links)
-
         if cleaned:
             for cleansed in cleaned:
                 final_result.append(TextNode(cleansed, TextType.NORMAL))
@@ -375,6 +373,7 @@ def count_sharp_symbol(block):
         if c == "#":
             count += 1
     return count
+
 def generate_page(from_path, template_path, dest_path):
     dest_dir = os.path.dirname(dest_path)
     os.makedirs(dest_dir, exist_ok=True)
