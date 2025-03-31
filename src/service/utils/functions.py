@@ -207,7 +207,6 @@ def split_nodes_link(old_nodes):
 def text_to_textnodes(text):
     res = [TextNode(text, TextType.NORMAL)]
     delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
-    
     ### TEXT LOOP
     for delimiter, delimiter_type in delimiters:
         tmp = []
@@ -218,7 +217,7 @@ def text_to_textnodes(text):
     res2 = []
     for node in res:
         tmp2 = []
-        if node.text_type == TextType.NORMAL:
+        if node.text_type == TextType.NORMAL and node.text:
             img_node = split_nodes_image([node])
             if type(img_node) == list:
                 tmp2.extend(split_nodes_image([node]))
@@ -280,13 +279,15 @@ def markdown_to_html_node(markdown):
                 else:
                     for blockr in block_replacement:
                         conversion = text_node_to_html_node(blockr) if isinstance(blockr, TextNode) else text_node_to_html_node(blockr[0])
-                        internal_conversion.append(conversion)
+                        internal_conversion.append(conversion)        
+                print(f"PROCESSED PARAGRAPH <p>: {ParentNode('p', internal_conversion).to_html()}")
                 res.append(ParentNode('p', internal_conversion))
             case BlockType.heading:
                 heading_level = count_sharp_symbol(block)
                 block = block.replace("#","")
                 block = block.strip()
                 value = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(block.replace('\n', ' '))))
+                print(f"PROCESSED HEADING h{heading_level}: {ParentNode(f'h{heading_level}', value[0] if isinstance(value[0], list) else value).to_html()}")
                 res.append(ParentNode(f'h{heading_level}', value[0] if isinstance(value[0], list) else value))
             case BlockType.quote:
                 block_splits = block.split('\n')
@@ -299,10 +300,13 @@ def markdown_to_html_node(markdown):
                         super_clean.append(element)
                 text_to_text_node_list = list(map(lambda x: text_to_textnodes(x), super_clean))
                 for list_node in text_to_text_node_list:
+                    print(f"PROCESSED BLOCKQUOTE: {LeafNode('blockquote', list_node[0].text.strip()).to_html()}")
                     res.append(LeafNode('blockquote', list_node[0].text.strip()))
             case BlockType.code:
+                print(f"PROCESSED CODE: {ParentNode('pre',[LeafNode('code', block.replace("```", ""))]).to_html()}")
                 res.append(ParentNode('pre',[LeafNode('code', block.replace("```", ""))]))
             case BlockType.unordered_list:
+                print(f"PROCESSING BLOCK: {block}")
                 list_res = []
                 splits = block.split('\n')
                 i = 1
@@ -311,8 +315,11 @@ def markdown_to_html_node(markdown):
                     list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                     list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                     list_res.append(list_node)
+                print(f"WILL TRY TO PROCESS THE FOLLOWING LIST OF NODES: {list_res}")
+                print(f"PROCESSED UNORDERED LIST: {ParentNode('ul', list_res).to_html()}")
                 res.append(ParentNode('ul', list_res))    
             case BlockType.ordered_list:
+                print(f"PROCESSING BLOCK: {block}")
                 list_res = []
                 splits = block.split('\n')
                 i = 1
@@ -321,6 +328,8 @@ def markdown_to_html_node(markdown):
                     list_of_childs = list(map(lambda x: list(map(lambda y: text_node_to_html_node(y),x)) if isinstance(x, list) else text_node_to_html_node(x), text_to_textnodes(split)))
                     list_node = ParentNode('li', list_of_childs[0] if isinstance(list_of_childs[0], list) else list_of_childs)
                     list_res.append(list_node)
+                print(f"WILL TRY TO PROCESS THE FOLLOWING LIST OF NODES: {list_res}")
+                print(f"PROCESSED ORDERED LIST: {ParentNode('ul', list_res).to_html()}")
                 res.append(ParentNode('ol', list_res))
     return ParentNode('div', res)
 
@@ -349,7 +358,6 @@ def copy_resources_recursively(target_path: str, destination_path: str):
             objective_path = source_path + "/" + path
             if os.path.isfile(objective_path):
                 paths_to_copy.append(objective_path)
-                return
             else:
                 os.mkdir(objective_path.replace(target_path, destination_path))
                 recursive_copy(objective_path, os.listdir(objective_path))
@@ -386,7 +394,8 @@ def generate_page(from_path, template_path, dest_path):
     title = title.replace("#", "")
     title = title.strip()
     md_object_file = markdown_to_html_node(md_file)
-
+    print(f"----Node Object-----\n")
+    print(f"{md_object_file}\n")
     html_file = md_object_file.to_html()
     print(f"----Printing HTML: {html_file}")
     with open(template_path) as template_file:
