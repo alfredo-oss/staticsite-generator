@@ -57,6 +57,7 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     def has_matching_delimiter(node: TextNode, delimiter: str) -> bool:
         s = ""
         count = 0
+        print(f"EVALUATING MATCHING DELIMITERS OF: {node}")
         if len(delimiter) == 1:
             for c in node.text:
                 s += c
@@ -78,17 +79,21 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
             else:
                 return False            
         
-    
     res = []
+    for node in old_nodes:
+        if not isinstance(node, TextNode):
+            node = TextNode(node, TextType.NORMAL)
     for old_node in old_nodes:
         aux = []
-        print(f"NODE HAS MATCHING DELIMITER: {has_matching_delimiter(old_node, delimiter)}")
-        if has_matching_delimiter(old_node, delimiter):
-            print(f"SPLITS WHEN HAVING MULTIPLE DELIMITERS IN ONE ITEM: {old_node.text.split(delimiter)}")
-            text_first, dif_text, text_second = old_node.text.split(delimiter)
-            aux.append(TextNode(text_first, TextType.NORMAL))
-            aux.append(TextNode(dif_text, text_type))
-            aux.append(TextNode(text_second, TextType.NORMAL)) 
+        if isinstance(old_node, TextNode) and has_matching_delimiter(old_node, delimiter):
+            splits = old_node.text.split(delimiter)
+            if len(splits) == 3:
+                text_first, dif_text, text_second = old_node.text.split(delimiter)
+                aux.append(TextNode(text_first, TextType.NORMAL))
+                aux.append(TextNode(dif_text, text_type))
+                aux.append(TextNode(text_second, TextType.NORMAL)) 
+            else:
+                aux.extend(parse_multi_nested_nodes(old_node.text))
         else:
             aux.append(old_node)
         res.extend(aux)
@@ -109,6 +114,33 @@ def extract_markdown_images(text):
 def extract_markdown_links(text):
     matches = re.findall(r"\[(.*?)\]\((.*?)\)", text)
     return matches
+
+def parse_multi_nested_nodes(objective_string: str):
+    italic_matches = re.findall(r"_(.*?)_", objective_string) 
+    bold_matches = re.findall(r"\*\*(.*?)\*\*", objective_string)
+    code_matches = re.findall(r"`(.*?)`", objective_string)
+    splits = []
+    multi_match = [(italic_matches, TextType.ITALIC, "_"), (bold_matches, TextType.BOLD, "**"), (code_matches, TextType.CODE, "`")]
+    for matches, match_type, split_string in multi_match:
+        if split_string in objective_string:
+            matches = deque(matches)
+            splits = objective_string.split(split_string)
+            i = 0
+            while matches:
+                matching_string = matches.popleft() 
+                while i < len(splits):
+                    if splits[i] == matching_string:
+                        splits[i] = TextNode(matching_string, match_type)
+                        i += 1
+                        break
+                    i += 1
+        else: 
+            continue
+    for element in splits:
+        if not isinstance(element, TextNode):
+            element = TextNode(element, TextType.NORMAL)
+    print(f"RETURNING NODES FROM MULTI PARSING: {splits}")
+    return splits
 
 def split_nodes_image(old_nodes):
     def main_job(text):
@@ -160,6 +192,7 @@ def split_nodes_image(old_nodes):
         return result
 
 def split_nodes_link(old_nodes):
+    delimiters = [("**", TextType.BOLD), ("`", TextType.CODE), ("_", TextType.ITALIC)]
     def main_job(text):
         final_result = []
         matches = extract_markdown_links(text)
@@ -214,13 +247,22 @@ def text_to_textnodes(text):
     for delimiter, delimiter_type in delimiters:
         tmp = []
         for text_element in res:
-            print(f"TRANSFORMING CURRENT TEXT: {text_element}, WITH DELIMITER: {delimiter}, AND DELIMITER TYPE: {delimiter_type}")
             tmp.extend(split_nodes_delimiter([text_element], delimiter, delimiter_type))
         res = tmp
-    print(f"RESULT AFTER TRANSFORMING: {res}")
+
+    mod_res = []
+    for element in res:
+        if not isinstance(element, TextNode):
+            print(f"ELEMENT THAT DOES NOT MATCH THE TEXTNODE TYPE: {element}")
+            mod_res.append(TextNode(element, TextType.NORMAL))
+            continue
+        mod_res.append(element)
+    print(f"MODIFIED TYPE RESULT: {mod_res}")
+
     ### IMAGE LOOP
     res2 = []
-    for node in res:
+    print(f"NODES ENTERING THE IMAGE LOOP: {res}")
+    for node in mod_res:
         tmp2 = []
         if node.text_type == TextType.NORMAL and node.text:
             img_node = split_nodes_image([node])
