@@ -57,7 +57,6 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
     def has_matching_delimiter(node: TextNode, delimiter: str) -> bool:
         s = ""
         count = 0
-        print(f"EVALUATING MATCHING DELIMITERS OF: {node}")
         if len(delimiter) == 1:
             for c in node.text:
                 s += c
@@ -139,7 +138,6 @@ def parse_multi_nested_nodes(objective_string: str):
     for element in splits:
         if not isinstance(element, TextNode):
             element = TextNode(element, TextType.NORMAL)
-    print(f"RETURNING NODES FROM MULTI PARSING: {splits}")
     return splits
 
 def split_nodes_image(old_nodes):
@@ -253,15 +251,12 @@ def text_to_textnodes(text):
     mod_res = []
     for element in res:
         if not isinstance(element, TextNode):
-            print(f"ELEMENT THAT DOES NOT MATCH THE TEXTNODE TYPE: {element}")
             mod_res.append(TextNode(element, TextType.NORMAL))
             continue
         mod_res.append(element)
-    print(f"MODIFIED TYPE RESULT: {mod_res}")
 
     ### IMAGE LOOP
     res2 = []
-    print(f"NODES ENTERING THE IMAGE LOOP: {res}")
     for node in mod_res:
         tmp2 = []
         if node.text_type == TextType.NORMAL and node.text:
@@ -439,7 +434,7 @@ def count_sharp_symbol(block):
             count += 1
     return count
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, base_path):
     dest_dir = os.path.dirname(dest_path)
     os.makedirs(dest_dir, exist_ok=True)
 
@@ -458,11 +453,12 @@ def generate_page(from_path, template_path, dest_path):
     # These two lines were not updating the string — remember strings are immutable
     loaded_template_file = loaded_template_file.replace('{{ Title }}', title)
     loaded_template_file = loaded_template_file.replace('{{ Content }}', html_file)
-
+    loaded_template_file = loaded_template_file.replace('href="/', f'href="{base_path}')
+    loaded_template_file = loaded_template_file.replace('src="/', f'src="{base_path}')
     with open(dest_path, 'w') as target_file:
         target_file.write(loaded_template_file)
         
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, base_path):
     recursive_paths = os.listdir(dir_path_content)
     paths_to_copy = []
     def recursive_generation(source_path, recursive_paths):
@@ -478,4 +474,4 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
     recursive_generation(dir_path_content, recursive_paths)
     for files in paths_to_copy:
         source, target = files
-        generate_page(source, template_path, target)
+        generate_page(source, template_path, target, base_path)
